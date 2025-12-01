@@ -30,6 +30,13 @@ public class TowerManager {
     }
 
     /**
+     * Remove uma torre específica do mapa (usado para venda).
+     */
+    public void removeTower(Tower tower) {
+        this.towers.remove(tower);
+    }
+
+    /**
      * Adiciona uma nova torre no mapa
      * A posição já vem alinhada ao grid (múltiplo de 32)
      */

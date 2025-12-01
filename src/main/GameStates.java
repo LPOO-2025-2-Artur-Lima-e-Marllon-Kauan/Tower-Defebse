@@ -10,7 +10,8 @@ public enum GameStates {
     MENU,
     SETTINGS,
     EDIT,
-    GAME_OVER;
+    GAME_OVER,
+    VICTORY;
 
     public static GameStates gameState = MENU;
 

@@ -25,6 +25,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case SETTINGS -> this.game.getSettings().mouseDragged(e.getX(), e.getY());
             case EDIT -> this.game.getEditor().mouseDragged(e.getX(), e.getY());
             case GAME_OVER -> this.game.getGameOver().mouseDragged(e.getX(), e.getY());
+            case VICTORY -> this.game.getVictory().mouseDragged(e.getX(), e.getY());
         }
 
     }
@@ -36,6 +37,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case SETTINGS -> this.game.getSettings().mouseMoved(e.getX(), e.getY());
             case EDIT -> this.game.getEditor().mouseMoved(e.getX(), e.getY());
             case GAME_OVER -> this.game.getGameOver().mouseMoved(e.getX(), e.getY());
+            case VICTORY -> this.game.getVictory().mouseMoved(e.getX(), e.getY());
         }
 
     }
@@ -48,6 +50,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                 case SETTINGS -> this.game.getSettings().mouseClicked(e.getX(), e.getY());
                 case EDIT -> this.game.getEditor().mouseClicked(e.getX(), e.getY());
                 case GAME_OVER -> this.game.getGameOver().mouseClicked(e.getX(), e.getY());
+                case VICTORY -> this.game.getVictory().mouseClicked(e.getX(), e.getY());
             }
         }
 
@@ -60,6 +63,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case SETTINGS -> this.game.getSettings().mousePressed(e.getX(), e.getY());
             case EDIT -> this.game.getEditor().mousePressed(e.getX(), e.getY());
             case GAME_OVER -> this.game.getGameOver().mousePressed(e.getX(), e.getY());
+            case VICTORY -> this.game.getVictory().mousePressed(e.getX(), e.getY());
         }
 
     }
@@ -71,6 +75,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case SETTINGS -> this.game.getSettings().mouseReleased(e.getX(), e.getY());
             case EDIT -> this.game.getEditor().mouseReleased(e.getX(), e.getY());
             case GAME_OVER -> this.game.getGameOver().mouseReleased(e.getX(), e.getY());
+            case VICTORY -> this.game.getVictory().mouseReleased(e.getX(), e.getY());
         }
 
     }

@@ -23,6 +23,7 @@ public class ActionBar extends Bar {
     // Botões para selecionar as torres disponíveis
     private MyButton[] towerButtons; // 4 botões para comprar torres (inclui Cospe Veneno)
     private MyButton upgradeButton; // Botão para fazer upgrade da torre selecionada
+    private MyButton sellButton;   // Botão para vender a torre selecionada
     private Tower displayedTower; // Torre clicada para exibir informações
     private final DecimalFormat formatter; // Formatação de números decimais (timer)
     private int gold = 100; // Ouro inicial do jogador
@@ -60,6 +61,13 @@ public class ActionBar extends Bar {
         int upgX = 480;
         int upgY = 630;
         this.upgradeButton = new MyButton("Upgrade", upgX, upgY, upgW, upgH);
+
+        // Botão de venda da torre selecionada
+        int sellW = 110;
+        int sellH = 35;
+        int sellX = 480;
+        int sellY = 675;
+        this.sellButton = new MyButton("Vender", sellX, sellY, sellW, sellH);
     }
 
     private void drawButtons(Graphics g) {
@@ -255,29 +263,37 @@ public class ActionBar extends Bar {
         int currentLevel = this.displayedTower.getLevel();
         if (currentLevel >= Towers.MAX_LEVEL) {
             g.drawString("Nível máximo alcançado", x, y + 20);
-            return;
+        } else {
+            int nextLevel = currentLevel + 1;
+            int cost = Towers.GetUpgradeCost(this.displayedTower.getTowerType(), currentLevel);
+            g.drawString("Upgrade -> Lv." + nextLevel, x, y + 20);
+            g.drawString("Custo: " + cost + "g", x, y + 40);
+
+            // Feedback visual se não tiver ouro suficiente
+            if (this.gold < cost) {
+                g.setColor(Color.RED);
+                g.drawString("Ouro insuficiente", x, y + 60);
+            }
+
+            // Desenha o botão de upgrade
+            boolean canAfford = this.gold >= cost;
+            g.setColor(canAfford ? new Color(80, 180, 80) : new Color(90, 90, 90));
+            g.fillRect(this.upgradeButton.x, this.upgradeButton.y, this.upgradeButton.width, this.upgradeButton.height);
+            g.setColor(Color.BLACK);
+            g.drawRect(this.upgradeButton.x, this.upgradeButton.y, this.upgradeButton.width, this.upgradeButton.height);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("LucidaSans", Font.BOLD, 14));
+            g.drawString("Upgrade", this.upgradeButton.x + 12, this.upgradeButton.y + 22);
         }
 
-        int nextLevel = currentLevel + 1;
-        int cost = Towers.GetUpgradeCost(this.displayedTower.getTowerType(), currentLevel);
-        g.drawString("Upgrade -> Lv." + nextLevel, x, y + 20);
-        g.drawString("Custo: " + cost + "g", x, y + 40);
-
-        // Feedback visual se não tiver ouro suficiente
-        if (this.gold < cost) {
-            g.setColor(Color.RED);
-            g.drawString("Ouro insuficiente", x, y + 60);
-        }
-
-        // Desenha o botão de upgrade
-        boolean canAfford = this.gold >= cost;
-        g.setColor(canAfford ? new Color(80, 180, 80) : new Color(90, 90, 90));
-        g.fillRect(this.upgradeButton.x, this.upgradeButton.y, this.upgradeButton.width, this.upgradeButton.height);
+        // Desenha sempre o botão de venda da torre selecionada
+        g.setColor(new Color(180, 80, 80));
+        g.fillRect(this.sellButton.x, this.sellButton.y, this.sellButton.width, this.sellButton.height);
         g.setColor(Color.BLACK);
-        g.drawRect(this.upgradeButton.x, this.upgradeButton.y, this.upgradeButton.width, this.upgradeButton.height);
+        g.drawRect(this.sellButton.x, this.sellButton.y, this.sellButton.width, this.sellButton.height);
         g.setColor(Color.WHITE);
         g.setFont(new Font("LucidaSans", Font.BOLD, 14));
-        g.drawString("Upgrade", this.upgradeButton.x + 12, this.upgradeButton.y + 22);
+        g.drawString("Vender", this.sellButton.x + 18, this.sellButton.y + 22);
     }
 
     /**
@@ -305,6 +321,11 @@ public class ActionBar extends Bar {
             this.tryUpgradeDisplayedTower();
         }
 
+        // Clique no botão de venda da torre selecionada
+        if (this.displayedTower != null && this.sellButton.getBounds().contains(x, y)) {
+            this.sellDisplayedTower();
+        }
+
     }
 
     private boolean isGoldEnoughForTower(int towerType) {
@@ -323,6 +344,7 @@ public class ActionBar extends Bar {
             b.setMouseOver(false);
         }
         this.upgradeButton.setMouseOver(false);
+        this.sellButton.setMouseOver(false);
 
         // Verifica qual botão está sob o mouse
         for (MyButton b : this.towerButtons) {
@@ -336,6 +358,10 @@ public class ActionBar extends Bar {
 
         if (this.displayedTower != null && this.upgradeButton.getBounds().contains(x, y)) {
             this.upgradeButton.setMouseOver(true);
+        }
+
+        if (this.displayedTower != null && this.sellButton.getBounds().contains(x, y)) {
+            this.sellButton.setMouseOver(true);
         }
 
     }
@@ -352,6 +378,10 @@ public class ActionBar extends Bar {
             this.upgradeButton.setMousePressed(true);
         }
 
+        if (this.displayedTower != null && this.sellButton.getBounds().contains(x, y)) {
+            this.sellButton.setMousePressed(true);
+        }
+
     }
 
     public void mouseReleased(int x, int y) {
@@ -359,6 +389,7 @@ public class ActionBar extends Bar {
             b.resetBooleans();
         }
         this.upgradeButton.resetBooleans();
+        this.sellButton.resetBooleans();
 
         // After releasing, update hover state based on current mouse position
         // (this uses the x,y params so they are not reported as unused)
@@ -388,6 +419,37 @@ public class ActionBar extends Bar {
 
         this.gold -= cost;
         this.displayedTower.upgrade();
+    }
+
+    /**
+     * Vende a torre selecionada, devolvendo 80% de todo o valor investido (compra + upgrades)
+     * e removendo a torre do mapa.
+     */
+    private void sellDisplayedTower() {
+        if (this.displayedTower == null) {
+            return;
+        }
+
+        int towerType = this.displayedTower.getTowerType();
+        int level = this.displayedTower.getLevel();
+
+        // Custo base da torre
+        int totalCost = Towers.GetTowerCost(towerType);
+
+        // Soma os custos de todos os upgrades já aplicados
+        for (int currentLevel = 1; currentLevel < level; currentLevel++) {
+            totalCost += Towers.GetUpgradeCost(towerType, currentLevel);
+        }
+
+        // 80% do valor total investido
+        int sellValue = Math.round(totalCost * 0.8f);
+
+        // Remove a torre do jogo
+        this.playing.getTowerManager().removeTower(this.displayedTower);
+
+        // Devolve o ouro ao jogador e limpa torre exibida
+        this.addGold(sellValue);
+        this.displayedTower = null;
     }
 
     /**

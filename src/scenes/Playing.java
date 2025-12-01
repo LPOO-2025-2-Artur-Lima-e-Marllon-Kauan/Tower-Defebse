@@ -8,6 +8,7 @@ package scenes;
 import enemies.Enemy;
 import helpz.LoadSave;
 import helpz.Constants.Enemies;
+import helpz.SoundPlayer;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
@@ -40,6 +41,7 @@ public class Playing extends GameScene implements SceneMethods {
     private int goldTick; // Contador para geração passiva de ouro
     private int lives = 8; // Vidas do jogador (aumentado para 8 corações)
     private final int TILE_SIZE = 32; // tamanho do tile (padronizado)
+    private boolean hasWon; // Flag para garantir que o som de vitória toque apenas uma vez
 
     public Playing(Game game) {
         super(game);
@@ -99,6 +101,14 @@ public class Playing extends GameScene implements SceneMethods {
         this.enemyManager.update();
         this.towerManager.update();
         this.projManager.update();
+
+        // Verifica condição de vitória: todas as waves foram concluídas e não há inimigos vivos
+        if (!this.hasWon && !this.isThereMoreWaves() && this.isAllEnemiesDead()) {
+            this.hasWon = true;
+            // Toca música de vitória e muda para a tela de Vitória
+            SoundPlayer.playVictory();
+            main.GameStates.SetGameState(main.GameStates.VICTORY);
+        }
     }
 
     private boolean isWaveTimerOver() {
@@ -302,6 +312,8 @@ public class Playing extends GameScene implements SceneMethods {
     public void enemyEscaped() {
         this.lives--;
         if (this.lives <= 0) {
+            // Som de derrota ao perder todas as vidas
+            SoundPlayer.playDefeat();
             main.GameStates.SetGameState(main.GameStates.GAME_OVER);
         }
     }

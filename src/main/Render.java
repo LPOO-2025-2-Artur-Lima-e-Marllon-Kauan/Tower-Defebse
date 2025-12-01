@@ -21,6 +21,7 @@ public class Render {
             case SETTINGS -> this.game.getSettings().render(g);
             case EDIT -> this.game.getEditor().render(g);
             case GAME_OVER -> this.game.getGameOver().render(g);
+            case VICTORY -> this.game.getVictory().render(g);
         }
 
     }
